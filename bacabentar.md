@@ -1,6 +1,6 @@
 kalau mau ubah
 
-- database webnya bisa langsung export/ekspor database_2026_dewi_khairunnisa_iot_air ke dalam phpmyadmin milikmu
+- untuk database webnya bisa langsung export/ekspor database_2026_dewi_khairunnisa_iot_air ke dalam phpmyadmin milikmu
 
 - bagian water.ino , perhatikan pada baris ke 15 (const char* serverName = "http://192.168.18.35:8081/api/post_data.php"; //on line 15) perhatikan, hanya ubah bagian ip ini yang sesuai dengan ip laptopmu (ipconfig) "http://192.168.**.**:****/api/post_data.php" 
 
@@ -13,3 +13,6 @@ kalau mau ubah
 - 
 - 
 
+_
+_
+_
