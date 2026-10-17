@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -6,13 +7,13 @@
 #include <DallasTemperature.h>
 
 // ==========================================
-// KONFIGURASI WIFI & SERVER
+// KONFIGURASI WIFI & SERVER CLOUD (HTTPS)
 // ==========================================
 const char* ssid = "wifi-iot";
 const char* password = "password-iot";
 
-// Ganti IP ini dengan IP Komputer tempat Docker berjalan
-const char* serverName = "http://192.168.18.35:8081/api/post_data.php";
+// Alamat API Server cPanel Hosting (HTTPS)
+const char* serverName = "https://localhost.scode.web.id/2026-dewi-khoirun-nisa-iot-air/api/post_data.php";
 
 // ==========================================
 // KONFIGURASI PIN & SENSOR
@@ -27,8 +28,8 @@ const int pinPH = 34;
 const int pinTurbidity = 35;
 
 // ===== KALIBRASI TURBIDITY =====
-const float TURB_V_JERNIH = 2.5;   // tegangan (V) saat air jernih (0 NTU)
-const float TURB_V_KERUH  = 1.0;   // tegangan (V) saat sangat keruh (3000 NTU)
+const float TURB_V_JERNIH = 2.90;  // tegangan (V) saat air jernih (0 NTU)
+const float TURB_V_KERUH  = 0.50;  // tegangan (V) saat sangat keruh (3000 NTU)
 // ===============================
 
 float suhuAir = 0.0;
@@ -172,8 +173,11 @@ void updateLCD() {
 
 void sendDataToServer() {
   if (WiFi.status() == WL_CONNECTED) {
+    WiFiClientSecure client;
+    client.setInsecure(); // Bypass validasi sertifikat CA agar HTTPS lancar tanpa ribet
+
     HTTPClient http;
-    http.begin(serverName);
+    http.begin(client, serverName);
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
     
     String httpRequestData = "suhu=" + String(suhuAir) + "&ph=" + String(phAir) + "&turbidity=" + String(turbidityAir);
