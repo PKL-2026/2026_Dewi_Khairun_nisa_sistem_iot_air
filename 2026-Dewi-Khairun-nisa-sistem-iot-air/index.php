@@ -61,12 +61,12 @@ if ($res && $res->num_rows > 0) {
 
     <div class="measuring-control">
         <div id="map-setup-container" style="max-width: 600px; margin: 0 auto 1rem auto; text-align:left;">
-            <label style="display:block; margin-bottom: 0.5rem; font-weight:600;">
-                Nama Lokasi:
-            </label>
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <input type="text" id="input-nama-lokasi" placeholder="misal: Sungai Jelutung" class="search-input" style="flex: 1;">
-                <button type="button" class="btn" onclick="getGPSLocation()">📍 Gunakan GPS</button>
+            <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; margin-bottom: 1rem;">
+                <div class="form-field" style="flex: 1; margin-bottom: 0;">
+                    <input type="text" id="input-nama-lokasi" placeholder=" " autocomplete="off">
+                    <label for="input-nama-lokasi">Nama Lokasi (misal: Sungai Jelutung)</label>
+                </div>
+                <button type="button" class="btn" onclick="getGPSLocation()" style="height: 48px; border-radius: 12px; white-space: nowrap; font-weight: 600;">📍 Gunakan GPS</button>
             </div>
             
             <label style="display:block; margin-bottom: 0.5rem; font-weight:600;">Titik Koordinat (Geser pin jika kurang akurat):</label>
