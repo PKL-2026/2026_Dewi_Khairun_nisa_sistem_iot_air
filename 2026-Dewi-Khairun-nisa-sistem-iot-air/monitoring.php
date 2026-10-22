@@ -166,7 +166,7 @@ if ($res && $res->num_rows > 0) {
             navPeng.classList.add('disabled-link');
             navMode.classList.add('disabled-link');
             // update timer
-            const elapsed = Math.floor((Date.now() / 1000) - json.state.start_time);
+            const elapsed = Math.max(0, Math.floor((Date.now() / 1000) - json.state.start_time));
             const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const s = (elapsed % 60).toString().padStart(2, '0');
             document.getElementById('banner-timer').textContent = `${m}:${s}`;
