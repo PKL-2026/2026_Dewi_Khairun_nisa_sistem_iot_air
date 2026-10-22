@@ -41,6 +41,23 @@ float turbidityAir = 0.0;
 String serverState = "STANDBY";
 bool isFirstMeasure = true;
 
+// ===== FILTER pH NON-BLOCKING (ROLLING BUFFER) =====
+const int PH_WINDOW_SIZE = 15;
+float phVoltageSamples[PH_WINDOW_SIZE];
+int phSampleIndex = 0;
+bool phBufferFilled = false;
+unsigned long lastPHSampleTime = 0;
+const unsigned long phSampleInterval = 50; // Sampel tiap 50ms (0ms delay)
+
+void samplePHNonBlocking() {
+  int raw = analogRead(pinPH);
+  float v = raw * (3.3 / 4095.0);
+  phVoltageSamples[phSampleIndex] = v;
+  phSampleIndex = (phSampleIndex + 1) % PH_WINDOW_SIZE;
+  if (phSampleIndex == 0) phBufferFilled = true;
+}
+// ===================================================
+
 void checkHardware() {
   Serial.println("\n===============================");
   Serial.println("MEMULAI DIAGNOSTIK HARDWARE...");
@@ -116,8 +133,15 @@ void readSensors() {
     // Serial.println("[WARN] Suhu gagal dibaca, pakai nilai terakhir.");
   }
   
-  int nilaiAnalogPH = analogRead(pinPH);
-  float voltagePH = nilaiAnalogPH * (3.3 / 4095.0);
+
+  
+  // Hitung rata-rata tegangan pH dari Rolling Buffer (Anti-Noise & 0ms delay)
+  int sampleCount = phBufferFilled ? PH_WINDOW_SIZE : (phSampleIndex > 0 ? phSampleIndex : 1);
+  float sumVolt = 0.0;
+  for (int i = 0; i < sampleCount; i++) {
+    sumVolt += phVoltageSamples[i];
+  }
+  float voltagePH = (sampleCount > 0) ? (sumVolt / sampleCount) : (analogRead(pinPH) * (3.3 / 4095.0));
   
   // Rumus Kalibrasi Kustom (Terlindungi di 3.3V VCC)
   phAir = (-4.085 * voltagePH) + 17.48; 
@@ -125,7 +149,6 @@ void readSensors() {
   // Pengaman Software: Pastikan pH tidak menampilkan minus/ngawur
   if(phAir < 0.0) phAir = 0.0;
   if(phAir > 14.0) phAir = 14.0;
-  
   int nilaiAnalogTurbidity = analogRead(pinTurbidity);
   float voltageTurbidity = nilaiAnalogTurbidity * (3.3 / 4095.0);
   
@@ -173,11 +196,17 @@ void updateLCD() {
 
 void sendDataToServer() {
   if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure client;
-    client.setInsecure(); // Bypass validasi sertifikat CA agar HTTPS lancar tanpa ribet
-
     HTTPClient http;
-    http.begin(client, serverName);
+    bool isHttps = (String(serverName).indexOf("https://") == 0);
+
+    if (isHttps) {
+      WiFiClientSecure client;
+      client.setInsecure(); // Bypass validasi SSL jika HTTPS
+      http.begin(client, serverName);
+    } else {
+      WiFiClient client;
+      http.begin(client, serverName);
+    }
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
     
     String httpRequestData = "suhu=" + String(suhuAir) + "&ph=" + String(phAir) + "&turbidity=" + String(turbidityAir);
@@ -215,6 +244,12 @@ const long interval = 3000; // Kirim data setiap 3 detik supaya lebih responsif
 
 void loop() {
   unsigned long currentMillis = millis();
+  
+  // Sampling pH non-blocking setiap 50ms tanpa delay
+  if (currentMillis - lastPHSampleTime >= phSampleInterval) {
+    lastPHSampleTime = currentMillis;
+    samplePHNonBlocking();
+  }
   
   if (currentMillis - lastUpdate >= interval) {
     lastUpdate = currentMillis;
