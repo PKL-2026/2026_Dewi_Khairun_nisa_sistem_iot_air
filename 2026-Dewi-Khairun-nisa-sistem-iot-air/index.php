@@ -64,7 +64,7 @@ if ($res && $res->num_rows > 0) {
             <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; margin-bottom: 1rem;">
                 <div class="form-field" style="flex: 1; margin-bottom: 0;">
                     <input type="text" id="input-nama-lokasi" placeholder=" " autocomplete="off">
-                    <label for="input-nama-lokasi">Nama Lokasi (misal: Sungai Jelutung)</label>
+                    <label for="input-nama-lokasi">Masukkan Lokasi</label>
                 </div>
                 <button type="button" class="btn" onclick="getGPSLocation()" style="height: 48px; border-radius: 12px; white-space: nowrap; font-weight: 600;">📍 Gunakan GPS</button>
             </div>
@@ -227,7 +227,7 @@ if ($res && $res->num_rows > 0) {
         clearInterval(timerInterval);
         
         const updateTimer = () => {
-            const elapsed = Math.floor((Date.now() / 1000) - startTime);
+            const elapsed = Math.max(0, Math.floor((Date.now() / 1000) - startTime));
             const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const s = (elapsed % 60).toString().padStart(2, '0');
             document.getElementById('timer-display').textContent = `${m}:${s}`;
