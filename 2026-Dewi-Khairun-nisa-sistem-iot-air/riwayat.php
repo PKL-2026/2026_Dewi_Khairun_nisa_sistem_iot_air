@@ -321,7 +321,7 @@ if ($res && $res->num_rows > 0) {
             banner.style.display = 'block';
             navMon.classList.add('disabled-link');
             navPeng.classList.add('disabled-link');
-            const elapsed = Math.floor((Date.now() / 1000) - json.state.start_time);
+            const elapsed = Math.max(0, Math.floor((Date.now() / 1000) - json.state.start_time));
             const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const s = (elapsed % 60).toString().padStart(2, '0');
             document.getElementById('banner-timer').textContent = `${m}:${s}`;
